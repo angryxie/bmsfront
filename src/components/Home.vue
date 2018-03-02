@@ -50,45 +50,23 @@
       </Header>
       <Layout>
         <Sider hide-trigger :style="{background: '#fff'}">
-          <Menu @on-select="showComponent" active-name="1-2" theme="light" width="auto" :open-names="['1']">
-            <Submenu name="1">
+          <Menu @on-select="showComponent" active-name="" theme="light" width="auto" >
+            <Submenu v-for="menu in menus" :key="menu.id" :name="menu.name" v-if="menu.level==1">
               <template slot="title">
                 <Icon type="ios-navigate"></Icon>
-                Item 1
+                {{menu.name}}
               </template>
-              <MenuItem  name="1-1">点击</MenuItem>
-              <MenuItem name="1-2">Option 2</MenuItem>
-              <MenuItem name="1-3">Option 3</MenuItem>
-            </Submenu>
-            <Submenu name="2">
-              <template slot="title">
-                <Icon type="ios-keypad"></Icon>
-                Item 2
-              </template>
-              <MenuItem name="2-1">Option 1</MenuItem>
-              <MenuItem name="2-2">Option 2</MenuItem>
-            </Submenu>
-            <Submenu name="3">
-              <template slot="title">
-                <Icon type="ios-analytics"></Icon>
-                Item 3
-              </template>
-              <MenuItem name="3-1">Option 1</MenuItem>
-              <MenuItem name="3-2">Option 2</MenuItem>
+              <MenuItem v-for="menuItem in menu.childrens" :key="menuItem.id" :name="menuItem.routerName">{{menuItem.name}}</MenuItem>
             </Submenu>
           </Menu>
         </Sider>
         <Layout :style="{padding: '0 24px 24px'}">
-          <Breadcrumb :style="{margin: '24px 0'}">
+          <!--<Breadcrumb :style="{margin: '24px 0'}">
             <BreadcrumbItem>Home</BreadcrumbItem>
-            <BreadcrumbItem>Components</BreadcrumbItem>
-            <BreadcrumbItem>Layout</BreadcrumbItem>
-          </Breadcrumb>
+            <BreadcrumbItem>{{activMenu}}</BreadcrumbItem>
+          </Breadcrumb>-->
           <Content :style="{padding: '24px', minHeight: '280px', background: '#fff'}">
-            <Tabs type="card" closable>
-              <TabPane v-for="tab in tabs" :key="tab" :label="'标签' + tab">标签{{ tab }}</TabPane>
-              <Button type="ghost" @click="handleTabsAdd" size="small" slot="extra">增加</Button>
-            </Tabs>
+            <router-view></router-view>
           </Content>
         </Layout>
       </Layout>
@@ -99,15 +77,24 @@
   export default {
     data () {
       return {
-        tabs: 1
+        menus:[]
       }
+    },
+    mounted:function () {
+      this.$nextTick(function () {
+        var self=this;
+        this.$ajax.get('/getMenuInfo')
+          .then(function(response){
+            if(response.data.resultCode==200){
+              self.menus=response.data.data;
+            }
+          });
+      })
+
     },
     methods:{
       showComponent(name) {
-        this.$Message.success(name);
-      },
-      handleTabsAdd () {
-        this.tabs ++;
+        this.$router.push({name:name})
       }
     }
   }

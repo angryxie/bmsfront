@@ -15,7 +15,29 @@ export default new Router({
     {
       path:'/home',
       name:'Home',
-      component:Home
+      component:Home,
+      children:[
+        {
+          path:'a',
+          name:'a',
+          component:()=>import('@/components/A')
+        },
+        {
+          path:'customerInfo',
+          name:'CustomerInfo',
+          component:()=>import('@/components/CustomerInfo')
+        },
+        {
+          path:'orderInfo',
+          name:'OrderInfo',
+          component:()=>import('@/components/OrderInfo')
+        },
+        {
+          path:'userinfo',
+          name:'UserInfo',
+          component:()=>import('@/components/UserInfo')
+        }
+      ]
     }
   ]
 })
