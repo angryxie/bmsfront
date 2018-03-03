@@ -12,6 +12,17 @@ Vue.use(iView);
 Vue.config.productionTip = false
 Vue.prototype.$ajax = axios
 
+Vue.directive('permision',{
+  bind:function (el,binding) {
+    axios.get('/ispermision/'+binding.expression).then(function (response) {
+      console.log(response);
+      if (!response.data){
+        el.style.display='none';
+      }
+    });
+  }
+})
+
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
