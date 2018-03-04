@@ -5,6 +5,7 @@
     position: relative;
     border-radius: 4px;
     overflow: hidden;
+    height: 100%;
   }
   .layout-logo{
     width: 100px;
@@ -77,10 +78,98 @@
   export default {
     data () {
       return {
-        menus:[]
+        menus:[
+          {
+            "id":1,
+            "name":"客户管理",
+            "level":1,
+            "routerName":"CustomerMana",
+            "childrens":[
+              {
+                "id":4,
+                "name":"客户信息",
+                "level":2,
+                "routerName":"CustomerInfo",
+                "childrens":[
+
+                ],
+                "parent":1
+              }
+            ],
+            "parent":null
+          },
+          {
+            "id":2,
+            "name":"订单管理",
+            "level":1,
+            "routerName":"OrderMana",
+            "childrens":[
+              {
+                "id":5,
+                "name":"订单信息",
+                "level":2,
+                "routerName":"OrderInfo",
+                "childrens":[
+
+                ],
+                "parent":2
+              }
+            ],
+            "parent":null
+          },
+          {
+            "id":3,
+            "name":"权限管理",
+            "level":1,
+            "routerName":"AuthMana",
+            "childrens":[
+              {
+                "id":6,
+                "name":"用户管理",
+                "level":2,
+                "routerName":"UserInfo",
+                "childrens":[
+
+                ],
+                "parent":3
+              }
+            ],
+            "parent":null
+          },
+          {
+            "id":4,
+            "name":"客户信息",
+            "level":2,
+            "routerName":"CustomerInfo",
+            "childrens":[
+
+            ],
+            "parent":1
+          },
+          {
+            "id":5,
+            "name":"订单信息",
+            "level":2,
+            "routerName":"OrderInfo",
+            "childrens":[
+
+            ],
+            "parent":2
+          },
+          {
+            "id":6,
+            "name":"用户管理",
+            "level":2,
+            "routerName":"UserInfo",
+            "childrens":[
+
+            ],
+            "parent":3
+          }
+        ]
       }
     },
-    mounted:function () {
+    /*mounted:function () {
       this.$nextTick(function () {
         var self=this;
         this.$ajax.get('/getMenuInfo')
@@ -91,7 +180,7 @@
           });
       })
 
-    },
+    },*/
     methods:{
       showComponent(name) {
         this.$router.push({name:name})

@@ -18,11 +18,6 @@ export default new Router({
       component:Home,
       children:[
         {
-          path:'a',
-          name:'a',
-          component:()=>import('@/components/A')
-        },
-        {
           path:'customerInfo',
           name:'CustomerInfo',
           component:()=>import('@/components/CustomerInfo')
