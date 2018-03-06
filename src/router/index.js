@@ -28,7 +28,7 @@ export default new Router({
           component:()=>import('@/components/OrderInfo')
         },
         {
-          path:'userinfo',
+          path:'userInfo',
           name:'UserInfo',
           component:()=>import('@/components/UserInfo')
         }

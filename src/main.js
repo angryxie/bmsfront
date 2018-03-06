@@ -23,8 +23,23 @@ Vue.directive('permision',{
   }
 })
 
+//添加一个请求拦截器
+axios.interceptors.request.use(function(config){
+  return config;
+},function(err){
+
+  return Promise.reject(error);
+});
+//添加一个响应拦截器
+axios.interceptors.response.use(function(res){
+  return res;
+},function(err){
+  return Promise.reject(error);
+})
+
+
 /* eslint-disable no-new */
-new Vue({
+const vue=new Vue({
   el: '#app',
   router,
   components: { App },

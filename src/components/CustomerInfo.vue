@@ -1,22 +1,23 @@
 <template>
   <div>
     <div id="searchDiv">
-      <strong>姓名：</strong><Input size="small" style="width: 150px"></Input>
-      <strong>电话：</strong><Input size="small" style="width: 150px"></Input>
-      <Button size="small" style="margin-left: 20px" type="primary" icon="ios-search">搜索</Button>
+      <strong>姓名：</strong><Input size="small" v-model="searchData.name" style="width: 150px"></Input>
+      <strong>电话：</strong><Input size="small" v-model="searchData.phone" style="width: 150px"></Input>
+      <Button size="small" style="margin-left: 20px" @click="updateTable" type="primary" icon="ios-search">搜索</Button>
     </div>
     <div style="margin: 10px">
       <Button size="small" @click="modal = true" style="margin-left: 5px" type="primary" icon="person-add">新增</Button>
     </div>
     <Table border :columns="columns" :data="data"></Table>
+    <Page style="margin-top: 10px" @on-change="pageChange" @on-page-size-change="sizeChange" :total="pageInfo.total" :current="pageInfo.page" :page-size="pageInfo.size" show-sizer show-elevator show-total></Page>
     <Modal
       v-model="modal"
       title="用户信息"
       @on-ok="ok"
       @on-cancel="cancel">
-      <Form :model="customerInfo" :label-width="80">
-        <FormItem label="姓名">
-          <Input  v-model="customerInfo.name" placeholder="输入用户姓名"></Input>
+      <Form ref="customerInfo" :model="customerInfo" :label-width="80" :rules="formRules">
+        <FormItem prop="name" label="姓名">
+          <Input type="text"  v-model="customerInfo.name" placeholder="输入用户姓名"></Input>
         </FormItem>
         <FormItem label="性别">
           <RadioGroup v-model="customerInfo.gender">
@@ -34,6 +35,10 @@
           <DatePicker  format="yyyy-MM-dd" @on-change="dateSet" :value="customerInfo.birth" type="date" placeholder="选择日期" style="width: 200px"></DatePicker>
         </FormItem>
       </Form>
+      <div slot="footer">
+          <Button @click="cancel" shape="circle">取消</Button>
+        <Button @click="ok" type="primary" shape="circle">确认</Button>
+      </div>
     </Modal>
   </div>
 </template>
@@ -83,7 +88,7 @@
             key:'birth'
           },
           {
-            title: 'Action',
+            title: '操作',
             key: 'action',
             width: 150,
             align: 'center',
@@ -193,6 +198,10 @@
           }
         ],
         modal:false,
+        searchData:{
+          name:'',
+          phone:''
+        },
         customerInfo:{
           name:'',
           gender:'',
@@ -200,39 +209,83 @@
           address:'',
           birth:''
         },
-        editIndex:'',
+        pageInfo:{
+          size:20,
+          page:1,
+          total:100
+        },
+        formRules:{
+          name:[
+            {required:true,type:'string',message:'用户姓名不能为空',trigger:'blur'}
+          ]
+        }
       }
     },
     methods: {
       show (index) {
-        this.editIndex=index;
         this.customerInfo=JSON.parse(JSON.stringify(this.data[index]));
         this.modal=true;
       },
       remove (index) {
-        this.data.splice(index, 1);
+        this.customerInfo=JSON.parse(JSON.stringify(this.data[index]));
+        this.customerInfo.isdelete=1;
+        this.ok();
       },
       ok(){
         console.log(this.customerInfo);
-        this.$ajax.post(
-          '/customer/add',
-          this.customerInfo
-        ).then((response)=>{
-          if (response.data.success){
-            this.$Message.success(response.data.message);
+        this.$refs['customerInfo'].validate((valid)=>{
+          if (valid){
+            this.$ajax.post(
+              '/customer/addOrUpdate',
+              this.customerInfo
+            ).then((response)=>{
+              if (response.data.success){
+                this.$Message.success(response.data.message);
+              }
+            });
+            this.updateTable();
+            this.modal=false;
+            this.$refs['customerInfo'].resetFields();
+            this.customerInfo={};
           }
-          else {
-            this.$Message.error(response.data.message);
-          }
-        })
-        this.customerInfo="";
+        });
       },
       cancel (){
-        this.customerInfo="";
+        this.$refs['customerInfo'].resetFields();
+        this.customerInfo={};
+        this.modal=false;
       },
       dateSet(date){
         this.customerInfo.birth=date;
+      },
+      pageChange (page){
+        this.pageInfo.page=page;
+        this.updateTable();
+      },
+      sizeChange (size){
+        this.pageInfo.size=size;
+        this.updateTable();
+      },
+      updateTable(){
+        this.$ajax.post('/customer/getCustomerPageData',{
+          name:this.searchData.name,
+          phone:this.searchData.phone,
+          page:this.pageInfo.page,
+          size:this.pageInfo.size
+        }).then((response)=>{
+          if (response.data.success){
+            this.data=response.data.data.list;
+            this.pageInfo.total=response.data.data.total;
+            this.pageInfo.page=response.data.data.pageNum;
+            this.pageInfo.size=response.data.data.pageSize;
+          }
+        });
       }
+    },
+    mounted:function () {
+      this.$nextTick(()=>{
+      this.updateTable();
+      });
     }
   }
 </script>
