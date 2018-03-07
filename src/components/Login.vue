@@ -1,22 +1,25 @@
 <template>
     <div id="login">
-      <Card style="width:350px">
-        <Form ref="formInline" :model="formInline" :rules="ruleInline" >
-          <FormItem prop="user">
-            <Input type="text" v-model="formInline.user" placeholder="Username">
-            <Icon type="ios-person-outline" slot="prepend"></Icon>
-            </Input>
-          </FormItem>
-          <FormItem prop="password">
-            <Input type="password" v-model="formInline.password" placeholder="Password">
-            <Icon type="ios-locked-outline" slot="prepend"></Icon>
-            </Input>
-          </FormItem>
-          <FormItem>
-            <Button type="primary" @click="handleSubmit('formInline')">Signin</Button>
-          </FormItem>
-        </Form>
-      </Card>
+      <div class="loginDiv">
+        <Card style="width:350px;padding: 16px">
+          <p slot="title">用户登录</p>
+          <Form ref="formInline" :model="formInline" :rules="ruleInline" >
+            <FormItem prop="userName">
+              <Input type="text" v-model="formInline.userName" placeholder="Username">
+              <Icon type="ios-person-outline" slot="prepend"></Icon>
+              </Input>
+            </FormItem>
+            <FormItem prop="password">
+              <Input type="password" v-model="formInline.password" placeholder="Password">
+              <Icon type="ios-locked-outline" slot="prepend"></Icon>
+              </Input>
+            </FormItem>
+            <FormItem>
+              <Button type="primary" class="ivu-btn ivu-btn-primary ivu-btn-long" @click="handleSubmit('formInline')">登录</Button>
+            </FormItem>
+          </Form>
+        </Card>
+      </div>
     </div>
 </template>
 <script>
@@ -24,28 +27,31 @@
     data () {
       return {
         formInline: {
-          user: '',
+          userName: '',
           password: ''
         },
         ruleInline: {
-          user: [
-            { required: true, message: 'Please fill in the user name', trigger: 'blur' }
+          userName: [
+            { required: true, message: '请输入用户名', trigger: 'blur' }
           ],
           password: [
-            { required: true, message: 'Please fill in the password.', trigger: 'blur' },
-            { type: 'string', min: 6, message: 'The password length cannot be less than 6 bits', trigger: 'blur' }
+            { required: true, message: '请输入密码', trigger: 'blur' },
+            { type: 'string', min: 3, message: '密码不能小于6位数', trigger: 'blur' }
           ]
         }
       }
     },
     methods: {
       handleSubmit(name) {
-        this.$router.push({path:'/home'})
+
         this.$refs[name].validate((valid) => {
           if (valid) {
-            this.$Message.success('Success!');
-          } else {
-            this.$Message.error('Fail!');
+            this.$ajax.post('/user/doLogin',this.formInline).then((result)=>{
+              console.log(result);
+              if (result.data.success){
+                this.$router.push({path:'/home'});
+              }
+            });
           }
         })
       }
@@ -60,7 +66,10 @@
     position: relative;
     background-size: cover;
   }
-  card{
+
+  .loginDiv{
     float: right;
+    margin-right: 10%;
+    margin-top: 20%;
   }
 </style>
