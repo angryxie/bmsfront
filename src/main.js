@@ -27,13 +27,21 @@ Vue.directive('permision',{
 axios.interceptors.request.use(function(config){
   return config;
 },function(err){
-
+  vue.$Message.error("请求错误");
   return Promise.reject(error);
 });
 //添加一个响应拦截器
 axios.interceptors.response.use(function(res){
+  if(res.data.resultCode=402){
+    vue.$Message.error("请先登录");
+    vue.$router.push({name:'Login'});
+  }
+  else if (!res.data.success){
+    vue.$Message.error("操作失败");
+  }
   return res;
 },function(err){
+  vue.$Message.error("系统错误");
   return Promise.reject(error);
 })
 

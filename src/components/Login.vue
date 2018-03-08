@@ -47,7 +47,6 @@
         this.$refs[name].validate((valid) => {
           if (valid) {
             this.$ajax.post('/user/doLogin',this.formInline).then((result)=>{
-              console.log(result);
               if (result.data.success){
                 this.$router.push({path:'/home'});
               }

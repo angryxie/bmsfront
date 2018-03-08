@@ -6,13 +6,18 @@
         <Button size="small" style="margin-left: 20px" @click="updateTable" type="primary" icon="ios-search">搜索</Button>
       </div>
       <div style="margin: 10px">
-        <Button size="small" @click="modal = true" style="margin-left: 5px" type="primary" icon="person-add">新增</Button>
+        <Button size="small" @click="addOrder" style="margin-left: 5px" type="primary" icon="android-list">新增</Button>
       </div>
       <div>
-        <Table border :columns="columns" :data="data"></Table>
+        <Table @on-row-click="selectOne" border :columns="columns" :data="data"></Table>
         <Page style="margin-top: 10px" @on-change="pageChange" @on-page-size-change="sizeChange" :total="pageInfo.total" :current="pageInfo.page" :page-size="pageInfo.size" show-sizer show-elevator show-total></Page>
       </div>
-      <div id="subTable"><Table border :columns="subColums" :data="subData"></Table></div>
+      <div v-if="subDivShow">
+        <div style="margin: 10px 0px 0px 10px">
+          <Button size="small" @click="addOrderEntry" style="margin-left: 5px" type="primary" icon="android-list">新增订单行</Button>
+        </div>
+        <div id="subTable"><Table border :columns="subColums" :data="subData"></Table></div>
+      </div>
       <div>
         <Modal @on-cancel="orderCancel" v-model="modal" title="订单信息" >
           <Form  :model="orderInfo" :label-width="80" >
@@ -48,6 +53,29 @@
             <Button @click="orderCancel" shape="circle">取消</Button>
             <Button @click="orderOk" type="primary" shape="circle">确认</Button>
           </div>
+        </Modal>
+      </div>
+      <div>
+        <Modal v-model="entryModal" title="订单行信息">
+          <Form :model="orderEntryInfo" :label-width="80">
+            <FormItem label="订单行号">
+              <strong>{{orderEntryInfo.entryCode}}</strong>
+            </FormItem>
+            <FormItem label="项目名">
+              <Input type="text" v-model="orderEntryInfo.name"/>
+            </FormItem>
+            <FormItem label="价格">
+              <Input type="text" v-model="orderEntryInfo.price"/>
+            </FormItem>
+            <FormItem label="备注">
+              <Input type="textarea" v-model="orderEntryInfo.remark"/>
+            </FormItem>
+            <FormItem label="负责人">
+              <Select filterable v-model="orderEntryInfo.owner" style="width:100px">
+                <Option v-for="(item,index) in userInfo" :value="item.userId" :key="index">{{ item.name }}</Option>
+              </Select>
+            </FormItem>
+          </Form>
         </Modal>
       </div>
     </div>
@@ -204,12 +232,16 @@
             ],
             subData:[],
             modal:false,
+            entryModal:false,
             orderInfo:{},
+            orderEntryInfo:{},
             pageInfo:{
               size:20,
               page:1,
               total:100
-            }
+            },
+            userInfo:[],
+            subDivShow:false
           }
         },
       methods:{
@@ -225,6 +257,7 @@
               this.pageInfo.total=response.data.data.total;
               this.pageInfo.page=response.data.data.pageNum;
               this.pageInfo.size=response.data.data.pageSize;
+              this.subDivShow=false;
             }
           });
         },
@@ -243,13 +276,11 @@
               this.$Message.success(data.message);
               this.updateTable();
               this.modal=false;
-              this.orderInfo={};
             }
           });
         },
         orderCancel(){
           this.modal=false;
-          this.orderInfo={}
         },
         orderDateSet(value){
           this.orderInfo.appointment=value;
@@ -259,12 +290,34 @@
           this.modal=true;
         },
         orderRemove(index){
-
+          this.$ajax.post('/order/deleteOrder',this.data[index]).then((result)=>{
+            if (result.data.success){
+              this.$Message.success(result.data.message);
+              this.updateTable();
+            }
+          });
+        },
+        addOrder(){
+          this.orderInfo={};
+          this.modal=true
+          console.log(this.subDivShow);
+        },
+        selectOne(row,index){
+          this.orderInfo=row;
+          this.subDivShow=true;
+        },
+        addOrderEntry(){
+          this.entryModal=true;
         }
       },
       mounted:function () {
         this.$nextTick(()=>{
           this.updateTable();
+          this.$ajax.get('/user/getUserInfo').then((result)=>{
+            if (result.data.success){
+              this.userInfo=result.data.data;
+            }
+          });
         });
       }
     }
@@ -272,7 +325,7 @@
 
 <style scoped>
   #subTable{
-    margin-top: 20px;
+    margin-top: 5px;
     width: 60%;
   }
 </style>
