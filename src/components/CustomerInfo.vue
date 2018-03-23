@@ -111,6 +111,10 @@
                     style: {
                       marginRight: '5px'
                     },
+                    directives:{
+                      name:"permision",
+                      expression:"admin"
+                    },
                     on: {
                       click: () => {
                         this.show(params.index)
@@ -173,29 +177,7 @@
           }
         ],
         data: [
-          {
-            name: 'John Brown',
-            phone: 15302265314,
-            address: 'New York No. 1 Lake Park',
-            birth:'1996-02-09',
-            gender:'0'
-          },
-          {
-            name: 'Jim Green',
-            age: 24,
-            address: 'London No. 1 Lake Park',
-            gender:'1'
-          },
-          {
-            name: 'Joe Black',
-            age: 30,
-            address: 'Sydney No. 1 Lake Park'
-          },
-          {
-            name: 'Jon Snow',
-            age: 26,
-            address: 'Ottawa No. 2 Lake Park'
-          }
+
         ],
         modal:false,
         searchData:{

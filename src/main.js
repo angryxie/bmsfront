@@ -32,7 +32,7 @@ axios.interceptors.request.use(function(config){
 });
 //添加一个响应拦截器
 axios.interceptors.response.use(function(res){
-  if(res.data.resultCode=402){
+  if(res.data.resultCode===402){
     vue.$Message.error("请先登录");
     vue.$router.push({name:'Login'});
   }
