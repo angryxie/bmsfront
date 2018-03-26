@@ -14,12 +14,25 @@ Vue.prototype.$ajax = axios
 
 Vue.directive('permision',{
   bind:function (el,binding) {
+    console.log("bind");
     axios.get('/ispermision/'+binding.expression).then(function (response) {
       console.log(response);
       if (!response.data){
         el.style.display='none';
       }
     });
+  },
+  update:function () {
+    console.log("update");
+  },
+  inserted:function () {
+    console.log("insert");
+  },
+  componentUpdated:function () {
+    console.log("componentUpdated");
+  },
+  unbind:function () {
+    console.log("unbind");
   }
 })
 
@@ -34,6 +47,10 @@ axios.interceptors.request.use(function(config){
 axios.interceptors.response.use(function(res){
   if(res.data.resultCode===402){
     vue.$Message.error("请先登录");
+    vue.$router.push({name:'Login'});
+  }
+  else if(res.data.resultCode===401){
+    vue.$Message.error("账号或者密码错误");
     vue.$router.push({name:'Login'});
   }
   else if (!res.data.success){

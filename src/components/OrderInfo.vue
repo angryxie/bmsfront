@@ -19,27 +19,27 @@
         <div id="subTable"><Table border :columns="subColums" :data="subData"></Table></div>
       </div>
       <div>
-        <Modal @on-cancel="orderCancel" v-model="modal" title="订单信息" >
-          <Form  :model="orderInfo" :label-width="80" >
+        <Modal @on-cancel="modal=false" v-model="modal" title="订单信息" >
+          <Form ref="orderRef" :model="orderInfo" :label-width="80" :rules="orderRules">
             <FormItem label="订单号">
               <strong>{{orderInfo.orderCode}}</strong>
             </FormItem>
-            <FormItem label="客户姓名">
+            <FormItem label="客户姓名" prop="name">
               <Input type="text" v-model="orderInfo.name"/>
             </FormItem>
-            <FormItem label="联系电话">
+            <FormItem label="联系电话" prop="phone">
               <Input type="text" v-model="orderInfo.phone"/>
             </FormItem>
             <FormItem label="预约时间">
               <DatePicker  format="yyyy-MM-dd" @on-change="orderDateSet" :value="orderInfo.appointment" type="date" placeholder="选择日期" style="width: 200px"></DatePicker>
             </FormItem>
-            <FormItem label="订单价格">
+            <FormItem label="订单价格" prop="price">
               <Input type="text" v-model="orderInfo.price"/>
             </FormItem>
-            <FormItem label="已付金额">
+            <FormItem label="已付金额" prop="paid">
               <Input type="text" v-model="orderInfo.paid"/>
             </FormItem>
-            <FormItem label="未付金额">
+            <FormItem label="未付金额" prop="unPaid">
               <Input type="text" v-model="orderInfo.unPaid"/>
             </FormItem>
             <FormItem label="备注">
@@ -50,32 +50,36 @@
             </FormItem>
           </Form>
           <div slot="footer">
-            <Button @click="orderCancel" shape="circle">取消</Button>
+            <Button @click="modal=false" shape="circle">取消</Button>
             <Button @click="orderOk" type="primary" shape="circle">确认</Button>
           </div>
         </Modal>
       </div>
       <div>
         <Modal v-model="entryModal" title="订单行信息">
-          <Form :model="orderEntryInfo" :label-width="80">
+          <Form ref="orderEntryRef" :rules="orderEntryRules" :model="orderEntryInfo" :label-width="80">
             <FormItem label="订单行号">
               <strong>{{orderEntryInfo.entryCode}}</strong>
             </FormItem>
-            <FormItem label="项目名">
+            <FormItem prop="name" label="项目名">
               <Input type="text" v-model="orderEntryInfo.name"/>
             </FormItem>
-            <FormItem label="价格">
+            <FormItem label="价格" prop="price">
               <Input type="text" v-model="orderEntryInfo.price"/>
             </FormItem>
             <FormItem label="备注">
               <Input type="textarea" v-model="orderEntryInfo.remark"/>
             </FormItem>
-            <FormItem label="负责人">
+            <FormItem label="负责人" prop="owner">
               <Select filterable v-model="orderEntryInfo.owner" style="width:100px">
                 <Option v-for="(item,index) in userInfo" :value="item.userId" :key="index">{{ item.name }}</Option>
               </Select>
             </FormItem>
           </Form>
+          <div slot="footer">
+            <Button @click="entryModal=false" shape="circle">取消</Button>
+            <Button @click="orderEntryOk" type="primary" shape="circle">确认</Button>
+          </div>
         </Modal>
       </div>
     </div>
@@ -86,6 +90,60 @@
         name: "",
         data(){
           return {
+            orderRules:{
+              name:[
+                {required:true,message:"请输入客户姓名",trigger:"blur"}
+              ],
+              phone:[
+                {required:true,message:"电话号码不能为空",trigger:"blur"},
+                {validator(rule, value, callback){
+                    var errors=[];
+                    if(!(/^1\d{10}$/.test(value))){
+                      callback("请输入正确的手机号码");
+                    }
+                    callback(errors);
+                  }}
+              ],
+              price:[
+                {required:true,message:"金额不能为空",trigger:"blur"},
+                {type:"number",message:"请输入正确的金额",trigger:"blur",transform(value){
+                    return Number(value);
+                  }}
+              ],
+              paid:[
+                {required:true,message:"已付金额不能为空",trigger:"blur"},
+                {type:"number",message:"请输入正确的金额",trigger:"blur",transform(value){
+                    return Number(value);
+                  }}
+              ],
+              unPaid:[
+                {required:true,message:"未付金额不能为空",trigger:"blur"},
+                {type:"number",message:"请输入正确的金额",trigger:"blur",transform(value){
+                    return Number(value);
+                  }}
+              ]
+            },
+            orderEntryRules:{
+              name:[
+                {required:true,message:"项目名不能为空",trigger:"blur"}
+              ],
+              price:[
+                {required:true,message:"金额不能为空",trigger:"blur"},
+                {type:"number",message:"请输入正确的金额",trigger:"blur",transform(value){
+                    return Number(value);
+                  }}
+              ],
+              owner:[
+                {validator(rule,value,callback){
+                  var errors=[];
+                  if (value&&value!=""){
+                    callback(errors);
+                  }
+                  callback("请选择正确的负责人");
+                  }},
+              ]
+
+            },
             searchData:{},
             columns:[
               {
@@ -227,7 +285,43 @@
               },
               {
                 title:'负责人',
-                key:'owner'
+                key:'ownerName'
+              },
+              {
+                title:"操作",
+                key:"action",
+                render:(h,params)=>{
+                  return h('div',[
+                    h('Button',{
+                      props:{
+                        type:'primary',
+                        size:'small'
+                      },
+                      style:{
+                        marginRight:'5px'
+                      },
+                      on:{
+                        click:()=>{
+                          console.log("编辑改订单行"+params.index);
+                        }
+                      }
+                    },"编辑"),
+                    h('Button',{
+                      props:{
+                        type:"error",
+                        size:"small"
+                      },
+                      style:{
+                        marginRight:"5px"
+                      },
+                      on:{
+                        click:()=>{
+                          console.log("删除该订单行"+params.index);
+                        }
+                      }
+                    },"删除")
+                  ])
+                }
               }
             ],
             subData:[],
@@ -270,17 +364,18 @@
           this.updateTable();
         },
         orderOk(){
-          this.$ajax.post('/order/addOrUpdate',this.orderInfo).then((response)=>{
-            const data=response.data;
-            if (data.success){
-              this.$Message.success(data.message);
-              this.updateTable();
-              this.modal=false;
+          this.$refs['orderRef'].validate((valid)=>{
+            if (valid){
+              this.$ajax.post('/order/addOrUpdate',this.orderInfo).then((response)=>{
+                const data=response.data;
+                if (data.success){
+                  this.$Message.success(data.message);
+                  this.updateTable();
+                  this.modal=false;
+                }
+              });
             }
           });
-        },
-        orderCancel(){
-          this.modal=false;
         },
         orderDateSet(value){
           this.orderInfo.appointment=value;
@@ -290,24 +385,49 @@
           this.modal=true;
         },
         orderRemove(index){
-          this.$ajax.post('/order/deleteOrder',this.data[index]).then((result)=>{
-            if (result.data.success){
-              this.$Message.success(result.data.message);
-              this.updateTable();
+          this.$Modal.confirm({
+            content:"确认删除改订单？",
+            onOk: ()=>{
+              this.$ajax.post('/order/deleteOrder',this.data[index]).then((result)=>{
+                if (result.data.success){
+                  this.$Message.success(result.data.message);
+                  this.updateTable();
+                }
+              });
             }
           });
+
         },
         addOrder(){
           this.orderInfo={};
           this.modal=true
-          console.log(this.subDivShow);
         },
         selectOne(row,index){
           this.orderInfo=row;
           this.subDivShow=true;
+          this.getOrderEntry(row);
+        },
+        getOrderEntry(row){
+          this.$ajax.post('/orderEntry/getByOrderId',row).then((result)=>{
+            if (result.data.success){
+              this.subData=result.data.data;
+            }
+          });
         },
         addOrderEntry(){
           this.entryModal=true;
+          this.orderEntryInfo={};
+        },
+        orderEntryOk(){
+          this.$refs["orderEntryRef"].validate((valid)=>{
+            if (valid){
+              this.$ajax.post("/orderEntry/addOrUpdate/"+this.orderInfo.id,this.orderEntryInfo).then((result)=>{
+                if (result.data.success){
+                  this.getOrderEntry(this.orderInfo);
+                }
+              });
+            }
+          })
         }
       },
       mounted:function () {
