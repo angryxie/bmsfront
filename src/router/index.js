@@ -31,6 +31,11 @@ export default new Router({
           path:'userInfo',
           name:'UserInfo',
           component:()=>import('@/components/UserInfo')
+        },
+        {
+          path:'roleInfo',
+          name:'RoleInfo',
+          component:()=>import('@/components/RoleInfo')
         }
       ]
     }

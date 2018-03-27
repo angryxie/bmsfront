@@ -169,10 +169,10 @@
         ]
       }
     },
-    /*mounted:function () {
+    mounted:function () {
       this.$nextTick(function () {
         var self=this;
-        this.$ajax.get('/getMenuInfo')
+        this.$ajax.get('/user/getMenuInfo')
           .then(function(response){
             if(response.data.resultCode==200){
               self.menus=response.data.data;
@@ -180,7 +180,7 @@
           });
       })
 
-    },*/
+    },
     methods:{
       showComponent(name) {
         this.$router.push({name:name})
