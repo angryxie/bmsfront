@@ -9,7 +9,7 @@
         <Button size="small" @click="addOrder" style="margin-left: 5px" type="primary" icon="android-list">新增</Button>
       </div>
       <div>
-        <Table @on-row-click="selectOne" border :columns="columns" :data="data"></Table>
+        <Table highlight-row @on-row-click="selectOne" border :columns="columns" :data="data"></Table>
         <Page style="margin-top: 10px" @on-change="pageChange" @on-page-size-change="sizeChange" :total="pageInfo.total" :current="pageInfo.page" :page-size="pageInfo.size" show-sizer show-elevator show-total></Page>
       </div>
       <div v-if="subDivShow">
@@ -39,8 +39,8 @@
             <FormItem label="已付金额" prop="paid">
               <Input type="text" v-model="orderInfo.paid"/>
             </FormItem>
-            <FormItem label="未付金额" prop="unPaid">
-              <Input type="text" v-model="orderInfo.unPaid"/>
+            <FormItem label="未付金额" prop="unpaid">
+              <Input type="text" v-model="orderInfo.unpaid"/>
             </FormItem>
             <FormItem label="备注">
               <Input type="textarea" v-model="orderInfo.remark"/>
@@ -116,7 +116,7 @@
                     return Number(value);
                   }}
               ],
-              unPaid:[
+              unpaid:[
                 {required:true,message:"未付金额不能为空",trigger:"blur"},
                 {type:"number",message:"请输入正确的金额",trigger:"blur",transform(value){
                     return Number(value);
@@ -302,7 +302,8 @@
                       },
                       on:{
                         click:()=>{
-                          console.log("编辑改订单行"+params.index);
+                          this.orderEntryInfo=this.subData[params.index];
+                          this.entryModal=true;
                         }
                       }
                     },"编辑"),
@@ -316,7 +317,7 @@
                       },
                       on:{
                         click:()=>{
-                          console.log("删除该订单行"+params.index);
+                          this.orderEntryRemove(params.index);
                         }
                       }
                     },"删除")
@@ -398,6 +399,19 @@
           });
 
         },
+        orderEntryRemove(index){
+          this.$Modal.confirm({
+            content:"确认删除改订单行？",
+            onOk: ()=>{
+              this.$ajax.get('/orderEntry/delete/'+this.subData[index].id).then((result)=>{
+                if (result.data.success){
+                  this.$Message.success(result.data.message);
+                  this.getOrderEntry(this.orderInfo);
+                }
+              });
+            }
+          });
+        },
         addOrder(){
           this.orderInfo={};
           this.modal=true
@@ -424,6 +438,7 @@
               this.$ajax.post("/orderEntry/addOrUpdate/"+this.orderInfo.id,this.orderEntryInfo).then((result)=>{
                 if (result.data.success){
                   this.getOrderEntry(this.orderInfo);
+                  this.entryModal=false;
                 }
               });
             }
